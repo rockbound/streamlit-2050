@@ -1,19 +1,23 @@
-# :earth_americas: GDP dashboard template
+# Rockbound 2050 Global Market Portfolio — interactive chart
 
-A simple Streamlit app showing the GDP of different countries in the world.
+Streamlit app behind the "Explore Interactive Chart" button on
+www.rockbound-capital.com/investment-strategy. Plots the growth of $10,000
+in the Rockbound 2050 Global Market Portfolio against the Vanguard Target
+Retirement 2050 Fund and the S&P 500 (dividends reinvested), with a date
+range slider and per-series performance metrics.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gdp-dashboard-template.streamlit.app/)
+## Data
 
-### How to run it on your own machine
+`values.csv` holds month-end portfolio values rebased to $10,000 at the
+common start (January 2021). It is regenerated and pushed by
+`scripts/make_website_charts.sh` in the `actions-rockbound-results` repo —
+the same run that produces the website's chart images — so the app and the
+website can never show different data. Streamlit Community Cloud redeploys
+automatically on every push.
 
-1. Install the requirements
+## Run locally
 
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+```
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```

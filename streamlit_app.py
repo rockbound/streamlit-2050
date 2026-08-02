@@ -7,7 +7,6 @@ import streamlit as st
 
 STREAMLIT_DIR = Path(__file__).resolve().parent
 STREAMLIT_VALUES_PATH = (STREAMLIT_DIR / "values.csv").resolve()
-STREAMLIT_2025_VALUES_PATH = (STREAMLIT_DIR / "values_2025_daily.csv").resolve()
 TITLE = "Rockbound Capital 2050 Global Asset Portfolio"
 PALETTE = [
     "#D9B38D",  # Gold
@@ -39,18 +38,12 @@ def load_data(local_path: Path) -> pd.DataFrame:
     return load_and_prepare_values(local_path)
 
 
-def combined_date_bounds(dataframes: list[pd.DataFrame]) -> tuple[datetime, datetime]:
-    non_empty = [df for df in dataframes if not df.empty]
-    assert non_empty, "No data loaded for slider bounds."
-    min_date = min(df["date"].min() for df in non_empty)
-    max_date = max(df["date"].max() for df in non_empty)
-    assert min_date <= max_date, f"Invalid combined date range: min_date={min_date}, max_date={max_date}"
+def date_bounds(df: pd.DataFrame) -> tuple[datetime, datetime]:
+    assert not df.empty, "No data loaded for slider bounds."
+    min_date = df["date"].min()
+    max_date = df["date"].max()
+    assert min_date <= max_date, f"Invalid date range: min_date={min_date}, max_date={max_date}"
     return min_date.to_pydatetime(), max_date.to_pydatetime()
-
-
-def select_dataset(start_date: datetime, base_df: pd.DataFrame, daily_2025_df: pd.DataFrame) -> pd.DataFrame:
-    assert start_date is not None, "Start date missing for dataset selection."
-    return daily_2025_df if start_date.year == 2025 else base_df
 
 
 def render_metrics_and_chart(source_df: pd.DataFrame, start_date: datetime, end_date: datetime) -> pd.DataFrame | None:
@@ -111,20 +104,15 @@ def main() -> None:
     st.title(TITLE)
 
     base_df = load_data(STREAMLIT_VALUES_PATH)
-    daily_2025_df = load_data(STREAMLIT_2025_VALUES_PATH)
 
-    min_date, max_date = combined_date_bounds([base_df, daily_2025_df])
+    min_date, max_date = date_bounds(base_df)
     # default_start = max_date - timedelta(days=365)
     default_start = datetime(2025, 1, 1)
     st.session_state.setdefault("date_range", (max(default_start, min_date), max_date))
 
     start_date, end_date = st.session_state["date_range"]
 
-    active_df = select_dataset(start_date, base_df, daily_2025_df)
-    # if start_date.year == 2025:
-    #     st.info("Using daily data for 2025 selections.")
-
-    filtered_df = render_metrics_and_chart(active_df, start_date, end_date)
+    filtered_df = render_metrics_and_chart(base_df, start_date, end_date)
 
     # st.subheader("Filter by Date")
     st.slider(
